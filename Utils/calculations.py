@@ -1,3 +1,5 @@
+from typing import List, Dict
+
 from DB import Session
 from DB.models import TestTable
 
@@ -7,8 +9,15 @@ from sqlalchemy import String as pgString, and_ as pg_and
 
 
 class TestCalculations:
+    """
+    Коллекция аналитических методов
+    """
+
     @staticmethod
-    def calculate_total() -> list:
+    def calculate_total() -> List[Dict[str, str]]:
+        """
+        Рассчтё тотала Qliq и Qoil сгруппированного по датам
+        """
         with Session() as ses:
             view = ses.query(TestTable.q_type,
                              TestTable.date.cast(pgString).label("date"),
@@ -26,6 +35,4 @@ class TestCalculations:
                 join(view2, pg_and(view2.c.date == view.c.date, view2.c.q_type == 'Qoil'), isouter=True). \
                 join(view3, pg_and(view3.c.date == view.c.date, view3.c.q_type == 'Qliq'), isouter=True)
 
-            res = [d._asdict() for d in data]
-
-        return res
+        return [d._asdict() for d in data]

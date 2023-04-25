@@ -29,6 +29,9 @@ def makeSession():
 
 @contextmanager
 def Session():
+    """
+    Декоратор, предоставляющий объект сессии для работы с базой данных
+    """
     ses = makeSession()
     try:
         yield ses

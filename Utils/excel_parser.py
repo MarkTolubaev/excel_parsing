@@ -2,6 +2,7 @@ from datetime import datetime
 from random import randint
 from abc import abstractmethod, ABC
 from types import MappingProxyType
+from typing import Tuple, Dict
 
 from pandas import read_excel
 
@@ -32,10 +33,19 @@ class Parser(ABC):
         self.__data = None
 
     @property
-    def data(self) -> tuple:
+    def data(self) -> Tuple[MappingProxyType, ...]:
+        """
+        Геттер для данных, полученных в ходе разбора файла
+
+        :return: кортеж неизменямых объектов
+        """
         return tuple(MappingProxyType(d) for d in self.__data)
 
-    def do_parsing(self):
+    def do_parsing(self) -> None:
+        """
+        Метод разбора excel файла заданного формата
+        """
+
         df2 = self._dataFrame.\
             loc[:, (['fact', 'forecast'],)].\
             stack([0, 1]).\
@@ -52,10 +62,13 @@ class Parser(ABC):
         self.__data = [r[1].to_dict() | self._moc_date() for r in normalized_table.iterrows()]
 
     @abstractmethod
-    def _moc_date(self) -> dict:
+    def _moc_date(self) -> Dict[str, str]:
         pass
 
 
 class TestParser(Parser):
     def _moc_date(self):
+        """
+        Генератция случайцных данных, подмешиваемых к разобранному файлу
+        """
         return {"date": getData(datetime(year=2023, month=4, day=randint(1, 30)))}

@@ -20,6 +20,9 @@ def getData(dt: datetime = None) -> str:
 
 
 class TestTable(Base):
+    """
+    Модель тестовой таблицы
+    """
     __tablename__ = 'test_table'
     __table_args__ = {'schema': 'public'}
 
