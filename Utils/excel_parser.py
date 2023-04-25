@@ -35,9 +35,10 @@ class Parser(ABC):
     @property
     def data(self) -> Tuple[MappingProxyType, ...]:
         """
-        Геттер для данных, полученных в ходе разбора файла
+        Геттер для данных, полученных в ходе разбора файла.
 
-        :return: кортеж неизменямых объектов
+        :return: кортеж неизменямых объектов со следующими аттрибутами
+
         """
         return tuple(MappingProxyType(d) for d in self.__data)
 
