@@ -1,10 +1,11 @@
 from datetime import datetime
 from random import randint
+from abc import abstractmethod, ABC
+from types import MappingProxyType
 
 from pandas import read_excel
 
-from DB import Session
-from DB.models import TestTable, getData
+from DB import getData
 
 
 class ParserError(Exception):
@@ -21,12 +22,18 @@ class ParserError(Exception):
         return str(self.detail)
 
 
-class Parser:
+class Parser(ABC):
     def __init__(self, file: str):
         try:
             self._dataFrame = read_excel(file, header=[0, 1, 2])
         except Exception as e:
             raise ParserError(f'Ошибка чтения файла: {e.__class__.__name__}: {str(e)}')
+
+        self.__data = None
+
+    @property
+    def data(self) -> tuple:
+        return tuple(MappingProxyType(d) for d in self.__data)
 
     def do_parsing(self):
         df2 = self._dataFrame.\
@@ -42,18 +49,13 @@ class Parser:
         normalized_table = df2.join(df1, on='index', rsuffix='_right', lsuffix='_left')
         normalized_table = normalized_table.loc[:, ~normalized_table.columns.isin(['index_right', 'index_left'])]
 
-        res = [r[1].to_dict() | {"date": self.__moc_date()} for r in normalized_table.iterrows()]
-        try:
-            self.__save_to_db(res)
-        except Exception as e:
-            raise ParserError(f'Ошибка записи в базу данных: {e.__class__.__name__}: {str(e)}')
+        self.__data = [r[1].to_dict() | self._moc_date() for r in normalized_table.iterrows()]
 
-    @staticmethod
-    def __save_to_db(data):
-        with Session() as ses:
-            ses.add_all((TestTable(**d, ) for d in data))
-            ses.commit()
+    @abstractmethod
+    def _moc_date(self) -> dict:
+        pass
 
-    @staticmethod
-    def __moc_date():
-        return getData(datetime(year=2023, month=4, day=randint(1, 30)))
+
+class TestParser(Parser):
+    def _moc_date(self):
+        return {"date": getData(datetime(year=2023, month=4, day=randint(1, 30)))}

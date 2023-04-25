@@ -15,6 +15,7 @@ def makeEngine():
     host = settings.get('host')
     port = settings.get('port')
     db = settings.get('db')
+
     hostname = f'{host}:{port}' if port else host
 
     engineString = f'postgresql://{user}:{password}@{hostname}/{db}'
