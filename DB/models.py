@@ -29,5 +29,4 @@ class TestTable(Base):
     q_type = db.Column(db.String(4), primary_key=True)
     data1 = db.Column(db.Integer)
     data2 = db.Column(db.Integer)
-    total = db.Column(db.Integer)
     date = db.Column(db.TIMESTAMP)

@@ -1,5 +1,6 @@
 postgres:
-  username:
-  password:
+  username: your-username
+  password: your-passphrase
   host: 127.0.0.1
   port: 5436
+  db: your-db-name
