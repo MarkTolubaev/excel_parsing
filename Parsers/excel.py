@@ -29,14 +29,24 @@ class Parser:
             raise ParserError(f'Ошибка чтения файла: {e.__class__.__name__}: {str(e)}')
 
     def do_parsing(self):
-        df2 = self._dataFrame.loc[:, (['fact', 'forecast'],)].stack([0, 1]).reset_index(names=['index', 'analytics', 'q_type'])
-        df1 = self._dataFrame.loc[:, (['id', 'company'],)].droplevel([1, 2], axis=1).reset_index(names='index')
+        df2 = self._dataFrame.\
+            loc[:, (['fact', 'forecast'],)].\
+            stack([0, 1]).\
+            reset_index(names=['index', 'analytics', 'q_type'])
+
+        df1 = self._dataFrame.\
+            loc[:, (['id', 'company'],)].\
+            droplevel([1, 2], axis=1).\
+            reset_index(names='index')
+
         normalized_table = df2.join(df1, on='index', rsuffix='_right', lsuffix='_left')
         normalized_table = normalized_table.loc[:, ~normalized_table.columns.isin(['index_right', 'index_left'])]
-        [r[1].to_dict() for r in normalized_table.iterrows()]
-        res = [r[1].to_dict() | {"date": self.__moc_date()} for r in normalized_table.iterrows()]
 
-        self.__save_to_db(res)
+        res = [r[1].to_dict() | {"date": self.__moc_date()} for r in normalized_table.iterrows()]
+        try:
+            self.__save_to_db(res)
+        except Exception as e:
+            raise ParserError(f'Ошибка записи в базу данных: {e.__class__.__name__}: {str(e)}')
 
     @staticmethod
     def __save_to_db(data):
